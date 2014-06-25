@@ -82,6 +82,13 @@ class Bubble_Api_Model_Catalog_Product_Api extends Mage_Catalog_Model_Product_Ap
 
         if ($product->isConfigurable()) {
             $conf = Mage::getModel('catalog/product_type_configurable')->setProduct($product);
+
+            $result['configurableAttributes'] = array();
+            $configurableAttributes =  $conf->getConfigurableAttributesAsArray();
+            foreach ($configurableAttributes as $confAttr) {
+                $result['configurableAttributes'][] = $confAttr['attribute_code'];
+            }
+
             $simple_collection = $conf->getUsedProductCollection()->addAttributeToSelect('*')->addFilterByRequiredOptions();
 
             $result['associated_skus']  = array();
