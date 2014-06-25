@@ -52,4 +52,51 @@ class Bubble_Api_Model_Catalog_Product_Api extends Mage_Catalog_Model_Product_Ap
             Mage::helper('bubble_api/catalog_product')->associateProducts($product, $simpleSkus, $priceChanges, $configurableAttributes);
         }
     }
+
+    /**
+     * Retrieve product info
+     *
+     * @param int|string $productId
+     * @param string|int $store
+     * @param array      $attributes
+     * @param string     $identifierType
+     * @return array
+     */
+    public function info($productId, $store = null, $attributes = null, $identifierType = null)
+    {
+        // make sku flag case-insensitive
+        if (!empty($identifierType)) {
+            $identifierType = strtolower($identifierType);
+        }
+
+        $product = $this->_getProduct($productId, $store, $identifierType);
+
+        $result = array( // Basic product data
+            'product_id' => $product->getId(),
+            'sku'        => $product->getSku(),
+            'set'        => $product->getAttributeSetId(),
+            'type'       => $product->getTypeId(),
+            'categories' => $product->getCategoryIds(),
+            'websites'   => $product->getWebsiteIds()
+        );
+
+        if ($product->isConfigurable()) {
+            $conf = Mage::getModel('catalog/product_type_configurable')->setProduct($product);
+            $simple_collection = $conf->getUsedProductCollection()->addAttributeToSelect('*')->addFilterByRequiredOptions();
+
+            $result['associated_skus']  = array();
+            foreach($simple_collection as $simple_product){
+                $result['associated_skus'][] =  $simple_product->getSku();
+            }
+        }
+
+        foreach ($product->getTypeInstance(true)->getEditableAttributes($product) as $attribute) {
+            if ($this->_isAllowedAttribute($attribute, $attributes)) {
+                $result[$attribute->getAttributeCode()] = $product->getData(
+                                                                $attribute->getAttributeCode());
+            }
+        }
+
+        return $result;
+    }
 }
