@@ -116,15 +116,15 @@ class Bubble_Api_Helper_Catalog_Product extends Mage_Core_Helper_Abstract
             ->getAttribute($attributeCode);
         if ($attribute && $attribute->getId() && $attribute->usesSource()) {
             foreach ($attribute->getSource()->getAllOptions(true, true) as $option) {
-                if ($label == $option['label']) {
+                if ($label == $option['label'] || $label == $option['value']) {
                     return $option['value'];
                 }
             }
         }
 
-        if ($newOptionId = $this->createOption($attribute, $label)) {
-            return $newOptionId;
-        }
+        // if ($newOptionId = $this->createOption($attribute, $label)) {
+        //     return $newOptionId;
+        // }
 
         return $label;
     }
